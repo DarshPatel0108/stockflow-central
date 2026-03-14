@@ -1,19 +1,14 @@
 import React, { useState } from "react";
-import { adjustments } from "@/lib/mockData";
+import { useAdjustments } from "@/hooks/useInventory";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Plus, Search } from "lucide-react";
-import type { DocStatus } from "@/lib/mockData";
+import { Plus, Search, Loader2 } from "lucide-react";
 
 const statusOptions = ["All", "draft", "done"];
 
 export default function Adjustments() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
-
-  const filtered = adjustments.filter((a) => {
-    const matchSearch = a.ref.toLowerCase().includes(search.toLowerCase()) || a.product.toLowerCase().includes(search.toLowerCase());
-    return matchSearch && (status === "All" || a.status === status);
-  });
+  const { data: adjustments = [], isLoading } = useAdjustments(search || undefined, status);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -44,36 +39,40 @@ export default function Adjustments() {
       </div>
 
       <div className="rounded border border-border bg-card shadow-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/40">
-              {["Reference", "Product", "Warehouse", "Recorded", "Counted", "Difference", "Date", "Status"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {filtered.map((a) => (
-              <tr key={a.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
-                <td className="px-4 py-2.5 font-mono text-xs text-primary">{a.ref}</td>
-                <td className="px-4 py-2.5 font-medium">{a.product}</td>
-                <td className="px-4 py-2.5 text-muted-foreground">{a.warehouse}</td>
-                <td className="px-4 py-2.5 tabular-nums">{a.recorded}</td>
-                <td className="px-4 py-2.5 tabular-nums">{a.counted}</td>
-                <td className="px-4 py-2.5">
-                  <span className={`font-semibold tabular-nums ${a.diff > 0 ? "text-success" : a.diff < 0 ? "text-danger" : "text-muted-foreground"}`}>
-                    {a.diff > 0 ? "+" : ""}{a.diff}
-                  </span>
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground">{a.date}</td>
-                <td className="px-4 py-2.5"><StatusBadge status={a.status as DocStatus} /></td>
+        {isLoading ? (
+          <div className="flex h-40 items-center justify-center"><Loader2 className="animate-spin text-primary" size={20} /></div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                {["Reference", "Product", "Warehouse", "Recorded", "Counted", "Difference", "Date", "Status"].map((h) => (
+                  <th key={h} className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">{h}</th>
+                ))}
               </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">No adjustments found</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {adjustments.map((a: any) => (
+                <tr key={a.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
+                  <td className="px-4 py-2.5 font-mono text-xs text-primary">{a.ref}</td>
+                  <td className="px-4 py-2.5 font-medium">{a.product}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{a.warehouse}</td>
+                  <td className="px-4 py-2.5 tabular-nums">{a.recorded}</td>
+                  <td className="px-4 py-2.5 tabular-nums">{a.counted}</td>
+                  <td className="px-4 py-2.5">
+                    <span className={`font-semibold tabular-nums ${a.diff > 0 ? "text-success" : a.diff < 0 ? "text-danger" : "text-muted-foreground"}`}>
+                      {a.diff > 0 ? "+" : ""}{a.diff}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{a.date}</td>
+                  <td className="px-4 py-2.5"><StatusBadge status={a.status} /></td>
+                </tr>
+              ))}
+              {adjustments.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">No adjustments found</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
