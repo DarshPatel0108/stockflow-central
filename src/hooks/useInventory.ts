@@ -187,7 +187,7 @@ export function useAdjustments(search?: string, status?: string) {
         `)
         .order("adj_date", { ascending: false });
 
-      if (status && status !== "All") q = q.eq("status", status);
+      if (status && status !== "All") q = q.eq("status", status as "draft" | "waiting" | "ready" | "done" | "cancelled");
 
       const { data, error } = await q;
       if (error) throw error;
