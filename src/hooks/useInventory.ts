@@ -225,7 +225,7 @@ export function useLedger(search?: string, type?: string) {
         .order("created_at", { ascending: false })
         .limit(200);
 
-      if (type && type !== "All") q = q.eq("movement_type", type);
+      if (type && type !== "All") q = q.eq("movement_type", type as "receipt" | "delivery" | "transfer" | "adjustment");
 
       const { data, error } = await q;
       if (error) throw error;
