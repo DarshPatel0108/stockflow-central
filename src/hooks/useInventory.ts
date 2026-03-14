@@ -121,7 +121,7 @@ export function useDeliveries(search?: string, status?: string) {
         .order("delivery_date", { ascending: false });
 
       if (search) q = q.or(`ref.ilike.%${search}%,customer.ilike.%${search}%`);
-      if (status && status !== "All") q = q.eq("status", status);
+      if (status && status !== "All") q = q.eq("status", status as "draft" | "waiting" | "ready" | "done" | "cancelled");
 
       const { data, error } = await q;
       if (error) throw error;
